@@ -1,0 +1,48 @@
+%Iris Eting 209027333
+%Nadav Orenstein 312349509
+
+function HoughMat = dip_hough_circles(BW, R0, teta0)
+    [M, N] = size(BW); % Get the size of the input image
+    %determine R
+    Rmax = min(M,N);
+    % Define the ranges for the parameters a (x-center), b (y-center), and r (radius)
+    A = 1:aStep:M; % Range of x-center
+    B = 1:bStep:N; % Range of y-center
+
+    
+    R = fix(R0:R0:Rmax); % Range of radius
+    theta = fix(-90:teta0:90); % θ range in degrees
+
+
+    % Create Accumulator Array initialized to 0
+    HoughMat = zeros(length(A), length(B), length(R));
+
+    % Loop over each edge pixel in the image
+    for x = 1:M
+        for y = 1:N
+            if BW(x, y) == 1 % Check if the pixel is an edge pixel
+                % Loop over all possible radius values
+                for rIndex = 1:length(R)
+                    r = R(rIndex);
+                    % Loop over a range of angles to cover the entire circle
+                    for t = 0:360
+                        % Calculate potential center (a, b) for this radius and angle
+                        a = fix(x - r * cosd(angle));
+                        b = fix(y - r * sind(angle));
+                        
+                        % Check if the calculated center is within bounds
+                        if a >= 1 && a <= M && b >= 1 && b <= N
+                            % Find the indices in A and B corresponding to the calculated (a, b)
+                            a_index = find(A == a);
+                            b_index = find(B == b);
+                            
+                            % Increment the accumulator for the current (a, b, r) triplet
+                            if ~isempty(a_index) && ~isempty(b_index)
+                                HoughMat(a_index, b_index, rIndex) = HoughMat(a_index, b_index, rIndex) + 1;
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
